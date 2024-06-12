@@ -1,12 +1,11 @@
-# Import required libraries
-import os 
+from apikey import apikey 
+import os
 import streamlit as st 
 from datetime import datetime
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 from langchain.memory import ConversationBufferMemory
-
 
 # Set page width with custom CSS
 st.markdown(
@@ -47,15 +46,16 @@ if start_date and end_date:
         st.write("Please select valid dates for both the start and end of your trip.")
 
 # LangChain setup
-        
-apikey = os.getenv("GOOGLE_API_KEY") 
-llm = ChatGoogleGenerativeAI(model="gemini-pro", temperature=0.9)
+
+os.environ['GOOGLE_API_KEY'] = apikey
+llm = ChatGoogleGenerativeAI(model="gemini-pro", temperature=0.9, google_api_key=apikey)
+
 prompt = st.text_input('Enter Your City/Country') 
 
 # Prompt templates
 Trip_template = PromptTemplate(
     input_variables=['city', 'duration'], 
-    template='generate {city} itinerary plan exactly for {duration} days, use google map for adding eating plan for every day, add morning, afternoon, evening plan for every day including food'
+    template='generate {city} itinerary plan exactly for {duration} days, use google map for adding eating plan for every day, add morning, afternoon, evening plan for every day including food, not give link'
 )
 
 # Memory 
@@ -63,7 +63,6 @@ Trip_memory = ConversationBufferMemory(input_key='city', memory_key='chat_histor
 
 # Llms
 Trip_chain = LLMChain(llm=llm, prompt=Trip_template, verbose=True, output_key='city', memory=Trip_memory)
-
 
 # Display trip plan
 output_button = st.button("Generate Trip Plan")
